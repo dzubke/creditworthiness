@@ -1,0 +1,13 @@
+
+20190806
+ - imported the data into excel and started looking through and eliminating sparsely populated or unpopulated features. All notes on changes are in the 
+    data_adjustments.txt file
+ - read the data into pandas dataframe
+
+
+20190804
+ - Converted bit of code from jupyter notebook into code
+ - Trimmed away all non-numeric data to build a quick model to see how it performs
+ - I plan to then go back and incorporate the non-numeric data through one-hot matricies and other means later
+ - However, I need to make a one-hot method to classify the loan_status values, so I'll need to do that work anyway...
+ - Made some progress on getting the unique values in the loan_status column so that they can be used to make a one-hot matrix. 
