@@ -1,5 +1,5 @@
 from explore_data import describe, unique_values
-from prep_data import read_csv
+from prep_data import read_csv, parse_labels
 
 def main() -> None:
     """The main method that calls of the function to perform the analysis
@@ -15,6 +15,13 @@ def main() -> None:
     describe(data_df)
     print(data_df.columns.values)
     print(unique_values(data_df['loan_status']))
+    print(type(data_df["loan_status"]))
+    clean_loan_status, credit_policy = parse_labels(data_df['loan_status'])
+    print(unique_values(clean_loan_status))
+    # describe()
+
+
+
 
 
 
