@@ -19,6 +19,8 @@ def describe(in_df: pd.DataFrame) -> None:
     
     """
 
+    assert type(in_df) == pd.DataFrame, "input object does not have type pd.DataFrame"
+
     print(in_df.info())
 
 
@@ -29,6 +31,7 @@ def plot(in_df: pd.DataFrame) -> None:
     """
 
     pass
+
 
 def unique_values(in_df: pd.DataFrame) -> List: 
     """This function will take in a pandas data series as input and will return a set of unique values. This will be used to see how many unique values are in the Series.
@@ -41,8 +44,9 @@ def unique_values(in_df: pd.DataFrame) -> List:
     Returns
     -------
     List
-        A list of all the unique values in the pandas dataframe
+        A list of all the unique values in the pandas dataframe“
 
     """
+    assert type(in_df) == pd.DataFrame or pd.Series, "input object does not have type pd.DataFrame or pd.Series“"
     
     return in_df.unique().tolist()

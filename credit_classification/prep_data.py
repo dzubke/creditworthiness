@@ -29,62 +29,212 @@ def read_csv(data_path: str) -> any:
     return data
 
 
-def parse_labels(loan_status: pd.Series) -> Tuple[pd.Series, pd.Series]:
-    """This function removes the prefix "Does not meet the credit policy. Status:" from the column "loan_status" and creates a separate column with 
-    the binary classification "Does not meet the credit policy".
+def NOT_startswith(prefix: str, in_series: pd.Series) -> pd.Series:
+    """
+    This function returns a pd.Series of boolean values if the elements of a pd.Series do not start with the inputted prefix. In other words, if an element of the series starts with the inputted prefix, a value of False
+        will be recorded in the output series.
 
     Parameters
     ----------
+    prefix: str
+        the input string that will return a False value if the series element starts with that string
+    
     loan_status: pd.Series
+        the input labels of the dataset.
+
+    Returns
+    --------
+    pass_credit_policy: pd.Series
+        a column of the data that binary classifies whether a loan met the credit policy (True) or did not meet the credit policy (False)
+
+    """
+    assert type(prefix) == str, "the input prefix is not a string"
+    assert type(in_series) == pd.Series, "the input array is not a pd.Series"
+
+    out_series = ~in_series.str.startswith(prefix)
+
+    return out_series
+
+
+def remove_prefix(prefix: str, in_series: pd.Series) -> pd.Series :
+    """
+    This function removes the input prefix from the input series
+
+    Parameters
+    ----------
+    prefix: str
+        the start of the string that will be removed from all elements in the Series
+    
+    in_series: pd.Series
         The original labeled data in the dataset
 
     Returns
     ----------
-    cleaned_loan_status: pd.Series
+    out_series: pd.Series
         the loan_status column with the prefix "Does not meet the credit policy. Status:" removed so only "Fully Paid" and "Charged Off" remain
-    
-    credit_policy: pd.Series
-        a column of the data that binary classifies whether a loan met the credit policy (1) or did not meet the credit policy (0)
-
-    Notes
-    ------
-    The reasoning for this method is that the unique labels in the dataset in the "loan_status" column have the values:
-    ['Fully Paid', 'Charged Off', 'Does not meet the credit policy. Status:Fully Paid', 'Does not meet the credit policy. Status:Charged Off']
-    As can be seen there is a "Does not meet the credit polcicy prefix in two of the labels". A google search revealed a spare set of explanation, but the 
-    one I found here: https://forum.lendacademy.com/?topic=2427.msg20813#msg20813 explains what I suspected: that lending club basically combined two pieces
-    of information into one column for some of the loans. For those with the "Does not meet.." prefix, the lender didn't meet the credit policy but were
-    still offered a loan and that loan was either Fully Paid or Charged off. This presents an opportunity to use the "Does not meet.." prefix into another 
-    feature.
 
     """
 
-    # this code won't work with a DataFrame due to indexing in the for loop, it must be a Series
-    assert type(loan_status) == pd.Series, "input object was not of pd.Series type"
+    assert type(in_series) == pd.Series, "input object was not of pd.Series type"
 
-    # creating the regex objects to check which rows have the prefix
-    prefix = "Does not meet the credit policy. Status:"
-    len_prefix = len(prefix)
-    regex = re.compile(prefix)
+    out_series = in_series.map(lambda x: x.lstrip(prefix)) 
+
+    return out_series
+
+
+def remove_suffix(suffix: str, in_series: pd.Series) -> pd.Series :
+    """
+    This function removes the input prefix from the input series
+
+    Parameters
+    ----------
+    prefix: str
+        the start of the string that will be removed from all elements in the Series
     
-    # the pandas series that will contain the binary values if the example meets the credit policy
-    credit_policy = pd.Series()
+    in_series: pd.Series
+        The original labeled data in the dataset
 
-    for index, rows in loan_status.iteritems(): 
-        if regex.match(rows):  
-            loan_status.iloc[index] = loan_status.iloc[index][len_prefix:]
-            credit_policy.append(pd.Series([0]))
-        else:
-            credit_policy.append(pd.Series([1]))
+    Returns
+    ----------
+    out_series: pd.Series
+        the loan_status column with the prefix "Does not meet the credit policy. Status:" removed so only "Fully Paid" and "Charged Off" remain
+
+    """
+
+    assert type(in_series) == pd.Series, "input object was not of pd.Series type"
+
+    out_series = in_series.map(lambda x: x.rstrip(suffix)) 
+
+    return out_series
+
+
+def add_column(add_series: pd.Series, col_name: str, in_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    This function adds the Series add_series to the in_df and returns the updated dataframe. add_series will have the label col_nume in the update dataframe.
+
+    Parameters
+    ---------
+    add_series: pd.Series
+        the series to be added to in_df
     
-    return loan_status, credit_policy
+    col_name: str
+        the name of the add_series column when added to in_df
 
-    # data['result'] = data['result'].map(lambda x: x.lstrip('+-').rstrip('aAbBcC'))
+    in_df: pd.DataFrame
+        the input dataframe that add_series will be added to
+
+    Returns
+    -------
+    in_df: pd.DataFrame
+        the output dataframe with add_series 
+
+    """
+
+    assert type(add_series) == pd.Series, "add_series is not a pd.Series"
+    assert type(col_name) == str, "col_name is not a str"
+    assert type(in_df) == pd.DataFrame, "in_df is not a pd.DataFrame"
+
+    # the col_name variable doesn't get assiend in the .assign() call... need to fix this otherwise all the added values will have the anem col_name
+    return in_df.assign( col_name = add_series.values)
+
+def drop_columns(in_df: pd.DataFrame, col_list: List[str]) -> pd.DataFrame: 
+    """
+    This function drops the column with name col_name from the input dataframe in_df
+
+    Parameters
+    ---------
+    in_df: pd.DataFrame
+        input dataframe
+
+    col_name: str
+        name of the column to be dropped
+
+    Returns
+    ----------
+    in_df: pd.DataFrame
+
+    """
+    
+    for col_name in col_list:
+        in_df = in_df.drop(columns=col_name)
+
+    return in_df
+
+
+def int_converter(in_series: pd.Series) -> pd.Series :
+    """
+    This function conversts the values in a pd.Series into integers
+
+    Parameters
+    ----------
+    in_series: pd.Series
+        the in_series that will be converted to integers
+
+    Returns
+    ----------
+    in_series: pd.Series
+        the same series with the columns as int values
+
+    """
+
+    assert type(in_series) == pd.Series, "input object was not of pd.Series type"
+
+    return in_series.map(lambda x: int(x)) 
+
+
+def float_converter(in_series: pd.Series) -> pd.Series :
+    """
+    This function conversts the values in a pd.Series into floats
+
+    Parameters
+    ----------
+    in_series: pd.Series
+        the in_series that will be converted to floats
+
+    Returns
+    ----------
+    in_series: pd.Series
+        the same series with the columns as float values
+
+    """
+
+    assert type(in_series) == pd.Series, "input object was not of pd.Series type"
+
+    return in_series.map(lambda x: float(x)) 
+
+
+def object_columns(in_df: pd.DataFrame) -> List['str'] :
+    """
+    This function returns a list of the column names that have type 'object' (or do not have an int, float, bool data type)
+
+    Parameters
+    ----------
+    in_df: pd.DataFrame
+
+    Returns
+    ----------
+    in_df: pd.DataFrame
+
+    """
+
+    assert type(in_df) == pd.DataFrame, "input object was not of pd.DataFrane type"
+
+    # the columns
+    col_list = []
+
+    for label, content in in_df.iteritems():
+        if type(content[0]) == str:
+            col_list.append(label)
+
+    return col_list
+
+    return 
+
 
 
 def clean(df):
     """
-
-
+    This functionn will perform various operations to clean the data such as dropping colummns with empty values
     """
 
     # pd.dropna     #drops empty cells
@@ -105,7 +255,7 @@ def one_hot_encoder(in_df: pd.DataFrame) -> pd.DataFrame:
     -------
     Code for the one-hot encoder taken from: https://machinelearningmastery.com/how-to-one-hot-encode-sequence-data-in-python/
 
-    """
+  
     # one_hot = np.eye(D)[V.reshape(-1)].T
 
         
@@ -125,7 +275,7 @@ def one_hot_encoder(in_df: pd.DataFrame) -> pd.DataFrame:
     # invert first example
     inverted = label_encoder.inverse_transform([argmax(onehot_encoded[0, :])])
     print(inverted)
-    
+    """
 
 
 if __name__ == "__main__":
