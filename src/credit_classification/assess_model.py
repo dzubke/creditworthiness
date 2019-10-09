@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 from sklearn.metrics import roc_curve, auc, confusion_matrix, precision_recall_curve
-import chart_studio.plotly.plotly as py
+# import chart_studio.plotly.plotly as py
 # import chart_studio.plotly.figure_factory as ff
 
 

@@ -19,7 +19,6 @@ def model_fit(model, Xtrain: pd.DataFrame, ytrain: pd.DataFrame):
 
 
 
-# def evaluate_model(model: Callable, xtrain: np.ndarray, ytrain: np.ndarray, xtest: np.ndarray, ytest: np.ndarray):
 
 def run_model(model: Callable, xtrain: np.ndarray, xtest: np.ndarray, ytrain: np.ndarray, ytest: np.ndarray):
     """
@@ -44,3 +43,6 @@ def run_model(model: Callable, xtrain: np.ndarray, xtest: np.ndarray, ytrain: np
     # return LR_Fit
 
     # lr1 = test_model(lr, xtrain, ytrain, xtest, ytest)
+
+
+

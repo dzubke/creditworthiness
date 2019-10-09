@@ -4,7 +4,10 @@ from typing import List
 # third-party modules
 import numpy as np
 
+"""The REST API has a CRUD framework (Create, Read, Update, Delete). For this example, the create command will create a new input object which will be
+    the input values of the loan application to be evaluated. 
 
+"""
 
 
 
