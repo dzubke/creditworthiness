@@ -11,3 +11,90 @@
  - I plan to then go back and incorporate the non-numeric data through one-hot matricies and other means later
  - However, I need to make a one-hot method to classify the loan_status values, so I'll need to do that work anyway...
  - Made some progress on getting the unique values in the loan_status column so that they can be used to make a one-hot matrix. 
+
+
+20190905
+ - continuing to work on the one-hot function to convert the data labels into binary values: Fully Paid or Charged Off 
+ - there was a wrinkle in the labeled data. The unique labels in the dataset in the "loan_status" column have the values 
+    ['Fully Paid', 'Charged Off', 'Does not meet the credit policy. Status:Fully Paid', 'Does not meet the credit policy. Status:Charged Off']
+    As can be seen there is a "Does not meet the credit polcicy prefix in two of the labels". A google search revealed a spare set of explanation, but the 
+    one I found here: https://forum.lendacademy.com/?topic=2427.msg20813#msg20813 explains what I suspected - that lending club basically combined two pieces
+    of information into one column for some of the loans. For those with the "Does not meet.." prefix, the lender didn't meet the credit policy but were
+    still offered a loan and that loan was either Fully Paid or Charged off. This presents an opportunity to use the "Does not meet.." prefix into another 
+    feature. And this is what I will do. 
+ - after doing so, I will build a basic model to get some preliminary results
+ - in the end cleaning the labels in loan_status took longer than I expected and after building out the function, I found a one-line implementation of what I was trying to do. In the end that's great because I love
+    one-line implementations. 
+
+20190906
+ - finished the one-line implementation that removes the prefix from the loan status values and creates a new features if the loan did not meet the credit policy. 
+ 
+ 20190907
+ - further cleaned the data by convering percentages in int_rate into floats
+ - started to drop questionable looking data from the dataset for now including dates 
+   and partially filled columns
+ - reworte some of the code to act directly on the data_df object instead of creating intermediate variables
+ - very close to getting that data to where I can analyze it... I can taste it...
+
+ 20190913
+  - back at it. I think the trimmed data should be ready to be fed into a model, so I am going to try to get some results today.
+  - I was able to get a 99% accuracy from a logistic regression classifier.
+
+  20190926
+  - It has again been a while. I was unsure if I would go through with the application as I wasn't sure the company was sufficiently focused on sustainability,
+   though after reading through the website again, they do seem pretty focused on sustainability. 
+  - Today, I plan to develop methods that assess the effectiveness of the classifier using F1 score. 
+  - Hopefully, I'll have time to develop a few methods that apply a series of models from sklearn and am able to build a table of their F1 score. 
+
+  - modified the run_model() function, and added the functions in the assess_model file. 
+  - worked a bit on plotting the datatables to compare the metrics from different model types
+
+  20191001
+  - got the logistic regression model to run and verified the F1score method and confusion matrix worked
+  - worked through a tutorial on building an API
+
+  20191002
+  - read about RESTful API's to understand how to build the API
+  - in my current thinking, I will use the following framework to build a drafted API:
+      - I will store the training data on the server, run the code that cleans the training data and creates a sklearn model. 
+      - Use a POST method that will create a new loan_application object that is inputted by the user as a JSON, the loan_application object with have a sub-resouce called 'predict', which will be the endpoint of interest
+      - A PUT method will then run the sklearn model on the loan_application object and update the predict object accordingly with the prediction of whether the person will fully pay off their loan. 
+      - And I think that's it. 
+
+20191003
+ - I continued to understand how the API works and how I can modify it to my own ends. 
+
+ 20191004
+ - I was able to comfortably modify the API and so will begin implementing my real API for the loan application object
+ 
+20191008
+ - I implemented the update of the predict object by pickling the sklearn model and unpickling the model into the server code
+ - I also finished implementing the predict end-point
+ 
+20191009
+ - I unpacked the loan_app dictionary in the update_predict method to be fed into the sklearn model and added all of the elements of the loan_app 
+    into the server_Helper dictionary. Tomorrow I will update the .yml file with the new values in the dictionary
+
+20191010
+ - I plan to updated the swagger.yml file with the new attributes in the dictionary and tested the API. All functionality seems to work as expected.
+
+20191011
+ - The API code still needs to be cleaned up a bit as the create() method in server_Helper doens't work, but I'm going to move past that for now.
+ - I'm going to write code to split the data into train/dev/test sets 
+ - If I have time, I will also build some code that will evaluate and compare different ML models
+ 
+To do:
+  - fix the create() method in server_Helper.py
+  - implement the update_all_predict method
+  - decide on the best model to use and tune any hyperparameters
+  - split the data into train/dev/test sets
+  - go back through the data and clean up some of the non-numeric columns in the dataset.
+  - host the server code in gcloud 
+  - develop tests for the code?
+  - make presentation
+
+Completed:
+  - build the API endpoint
+
+Notes:
+ ***use Seaborn for visualizations*******

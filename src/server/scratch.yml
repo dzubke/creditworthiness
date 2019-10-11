@@ -1,0 +1,87 @@
+
+
+        - name: loan_application
+          in: body
+          schema:
+            type: object
+            properties:
+              loan_id:
+                type: integer
+              loan_amnt:
+                type: number
+              funded_amnt:
+                type: number
+              funded_amnt_inv:
+                type: number
+              term:
+                type: number
+              int_rate:
+                type: number
+              installment:
+                type: number
+              annual_inc:
+                type: number
+              dti:
+                type: number
+              delinq_2yrs:
+                type: number
+              inq_last_6mths:
+                type: number
+              open_acc:
+                type: number
+              pub_rec:
+                type: number
+              revol_bal:
+                type: number
+              total_acc:
+                type: number
+              total_pymnt:
+                type: number
+              total_pymnt_inv:
+                type: number
+              total_rec_prncp:
+                type: number
+              total_rec_int:
+                type: number
+              total_rec_late_fee:
+                type: number
+              recoveries:
+                type: number
+              collection_recovery_fee:
+                type: number
+              last_pymnt_amnt:
+                type: number
+              pub_rec_bankruptcies:
+                type: number
+              predict: 
+                type: integer
+              timestamp:
+                type: string
+
+
+
+
+
+
+
+  
+  /loan_book/{loan_id}/dog_age:
+    get:
+      operationId: server_Helper.dog_years
+      tags:
+        - loan_book
+      summary: Read the dog_age of the person from the loan_book list
+      description: Read the dog_age of the person from the loan_book list
+      parameters:
+        - name: loan_id
+          in: path
+          description: Last name of the person to get from the list
+          type: string
+          required: True
+      responses:
+        200:
+          description: Successfully updated dog_age of the person from loan_book list operation
+          schema:
+            properties:
+              dog_age:
+                type: integer

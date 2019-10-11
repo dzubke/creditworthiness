@@ -26,20 +26,20 @@ def main() -> None:
     data_df = read_csv(label_csv)
 
     describe(data_df)
-    # print(data_df.columns.values)
-    #print(unique_values(data_df['loan_status']))
-    # print(type(data_df["loan_status"]))
+    print(data_df.columns.values)
+    print(unique_values(data_df['loan_status']))
+    print(type(data_df["loan_status"]))
     
     # these words need to be removed from the loan_status labels. a new feature will be extracted using them as well
     prefix = 'Does not meet the credit policy. Status:'
 
     # creates the column of whether a loan passed the credit policy and adds it to the dataframe
     credit_policy = NOT_startswith(prefix, data_df['loan_status'])
-    # print(credit_policy)
-    data_df = add_column(credit_policy, 'credit_policy', data_df)
+    print(credit_policy)
+    # data_df = add_column(credit_policy, 'credit_policy', data_df)
 
     data_df['loan_status'] = remove_prefix(prefix, data_df['loan_status'])
-    # print(unique_values(data_df['loan_status']))
+    print(unique_values(data_df['loan_status']))
 
     # now convert the words in the loan_status column into binary values
     zero_label = 'Charged Off'
@@ -58,18 +58,18 @@ def main() -> None:
     # removing the characters ' months' from the column 'term'
     suffix_months = ' months'
     data_df['term'] = remove_suffix(suffix_months, data_df['term'])
-    # print(data_df.iloc[:, :5])
+    print(data_df.iloc[:, :5])
     describe(data_df)
     
     # the columns of 'term' are still string values so we need to convert them
-    # print(type(data_df['term'][0]))
+    print(type(data_df['term'][0]))
     # so convert them to ints
     data_df['term'] = int_converter(data_df['term'])
     # and they are ints. 
-    # print(type(data_df['term'][0]))
+    print(type(data_df['term'][0]))
     
     # Who else needs to be ints? Let's look - 
-    # print(data_df.iloc[:, :10])
+    print(data_df.iloc[:, :10])
 
     # need to drop an interest rate sign off of int_rate. we can do that with remove_suffix and convert to float with float_converter
     suffix_percent = '%'
@@ -93,9 +93,9 @@ def main() -> None:
     # ok at this point, we are just going to rip out everything that isn't a float, int, or bool and get a basic model running. As per usual, we will come back from more data cleaning
     col_list = object_columns(data_df)
 
-    # print('there are 18 columns with object type as shown in the dtypes in the describe function')
-    # print(f'We can call the object_column function to find there are: {len(col_list)} objects detected')
-    # print(col_list)
+    print('there are 18 columns with object type as shown in the dtypes in the describe function')
+    print(f'We can call the object_column function to find there are: {len(col_list)} objects detected')
+    print(col_list)
 
 
     slim_data_df = drop_columns(data_df, col_list)
@@ -104,11 +104,11 @@ def main() -> None:
     # slim_data_df['mths_since_last_delinq'] = pd.to_numeric(slim_data_df['mths_since_last_delinq'])
     # slim_data_df['mths_since_last_delinq'] = slim_data_df['mths_since_last_delinq'].fillna(0)
 
-    # these columns I think need to be deteled for not good reason... other than they look fishy...
+    # these columns I think need to be deteled for no good reason... other than they look fishy...
     fishy_drop_list = ['next_pymnt_d', 'desc', 'mths_since_last_delinq', 'mths_since_last_record' ]
     slim_data_df = drop_columns(slim_data_df, fishy_drop_list)
 
-    # print(slim_data_df.iloc[:, 10:20])
+    print(slim_data_df.iloc[:, 10:20])
     describe(slim_data_df)
 
     # the 'id' column needs to be removed because the values aren't meaningful
@@ -138,8 +138,10 @@ def main() -> None:
     with open('model_fit.pickle', 'wb') as model_fn:
         pickle.dump(lr_fit, model_fn)
     
+    # creating a sample of the data to test in the server_Helper.py model
     data_excerpt = slim_data_df.iloc[0,:].to_numpy().reshape(1,-1)
 
+    # pickling that data sample to be unpickled in the server_Helper.py model
     with open('data_sample.pickle', 'wb') as data_fn:
         pickle.dump(data_excerpt, data_fn)
 
@@ -150,6 +152,7 @@ def main() -> None:
     lr_F1score_train = F1score(lr_fit, slim_data_df, y_labels)
     print(f"F1 score for training set: {lr_F1score_train}")
 
+    print(f"data sampe: {slim_data_df.iloc[0,:]}")
     # lr_F1score_dev = F1score(lr_fit, slim_data_df, y_labels)
 
 
