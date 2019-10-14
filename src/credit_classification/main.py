@@ -1,17 +1,23 @@
 # standard libraries
-import pickle
+
 
 # 3rd party libraries
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
+from sklearn.naive_bayes import GaussianNB
+from sklearn.neural_network import MLPClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
+from sklearn.ensemble import GradientBoostingClassifier
+
 
 
 # project libraries
 from explore_data import describe, unique_values
 from prep_data import read_csv, NOT_startswith, remove_prefix, add_column, drop_columns, remove_suffix, int_converter, float_converter, object_columns, count_nan
-from prep_data import nan_to_zero
-from model import model_fit
-from assess_model import F1score, plot_confusion_matrix
+from prep_data import nan_to_zero, dataset_split, pickle_object
+from model import model_fit, model_object_dict, model_fit_all
+from assess_model import F1score, plot_confusion_matrix, F1score_all
 
 
 def main() -> None:
@@ -130,45 +136,83 @@ def main() -> None:
     y_mask = count_nan(y_labels)
     print(f"y_mask: {y_mask}")
 
-    lr = LogisticRegression()
+    split_ratios = {"train": 0.8, "dev": 0.1, "test": 0.1}
+    X_train, X_dev, X_test, y_train, y_dev, y_test = dataset_split(slim_data_df, y_labels, split_ratios)
 
-    lr_fit = model_fit(lr, slim_data_df, y_labels)
+    print(f"X_train shape: {X_train.shape}, X_dev shape: {X_dev.shape}, X_test shape: {X_test.shape}")
+    print(f"y_train shape: {y_train.shape}, y_dev shape: {y_dev.shape}, y_test shape: {y_test.shape}")
+
+    model_dict = model_object_dict()
+
+    model_fits = model_fit_all(model_dict, X_train, y_train)
+
+    F1scores = F1score_all(model_fits, X_dev, y_dev)
+    print(F1scores)
+
+
+
+
+
+    '''
+    logreg = LogisticRegression(solver = 'lbfgs')
+    naive_bayes = GaussianNB()
+    MLPC = MLPClassifier(hidden_layer_sizes= (50, 100, 50, 25, 10), activation='relu', solver='adam')
+    knn = KNeighborsClassifier(n_neighbors= 5)
+    svc = SVC()
+    gbc = GradientBoostingClassifier()
+
+
+
+
+    lr_fit = model_fit(logreg, X_train, y_train)
+    nb_fit = model_fit(naive_bayes, X_train, y_train)
+    mlpc_fit = model_fit(MLPC, X_train, y_train)
+    knn_fit = model_fit(knn, X_train, y_train)
+    svc_fit = model_fit(svc, X_train, y_train)
+    gbc_fit = model_fit(gbc, X_train, y_train)
+
 
     # pickling the model
-    with open('model_fit.pickle', 'wb') as model_fn:
-        pickle.dump(lr_fit, model_fn)
+    # pickle_object(lr_fit, 'model_fit.pickle')
+
+
+    # lr_F1score_train = F1score(lr_fit, X_train, y_train, print_values=False)
+    # print(f"lr F1 score for training set: {lr_F1score_train}")
+
+    lr_F1score_dev= F1score(lr_fit, X_dev, y_dev, print_values=False)
+    print(f"lr F1 score for dev set: {lr_F1score_dev}")
+
+    # lr_F1score_test= F1score(lr_fit, X_test, y_test, print_values=False)
+    # print(f"lr F1 score for test set: {lr_F1score_test}")
+
+    nb_F1score_dev= F1score(nb_fit, X_dev, y_dev, print_values=False)
+    print(f"nb F1 score for dev set: {nb_F1score_dev}")
+
+    mlpc_F1score_dev = F1score(mlpc_fit, X_dev, y_dev, print_values=False)
+    print(f"mlpc F1 score for dev set: {mlpc_F1score_dev}")
+
+    knn_F1score_dev = F1score(knn_fit, X_dev, y_dev, print_values=False)
+    print(f"knn F1 score for dev set: {knn_F1score_dev}")
     
-    # creating a sample of the data to test in the server_Helper.py model
-    data_excerpt = slim_data_df.iloc[0,:].to_numpy().reshape(1,-1)
+    svc_F1score_dev = F1score(svc_fit, X_dev, y_dev, print_values=False)
+    print(f"svc F1 score for dev set: {svc_F1score_dev}")
 
-    # pickling that data sample to be unpickled in the server_Helper.py model
-    with open('data_sample.pickle', 'wb') as data_fn:
-        pickle.dump(data_excerpt, data_fn)
+    gbc_F1score_dev = F1score(gbc_fit, X_dev, y_dev, print_values=False)
+    print(f"gbc F1 score for dev set: {gbc_F1score_dev}")
+    '''
 
-    print(f"data excerpt: {data_excerpt}, size: {data_excerpt.shape}")
+    
 
-    print(int(lr_fit.predict(data_excerpt)[0]))
-
-    lr_F1score_train = F1score(lr_fit, slim_data_df, y_labels)
-    print(f"F1 score for training set: {lr_F1score_train}")
-
-    print(f"data sampe: {slim_data_df.iloc[0,:]}")
     # lr_F1score_dev = F1score(lr_fit, slim_data_df, y_labels)
 
 
     # plot_confusion_matrix(lr_fit, slim_data_df, y_labels)
+    
 
 
 
 
-    #$ save_fn = r'/Users/dustin/CS/jobs/interview_problems/Zume/CreditClassification/data'
-    # plot_datatable(slim_data_df, slim_data_df, save_fn)
-    # test_print()
-
-
-
-    # print(type(data_df['desc'][0]))
-
+    
     """SCRATCH CODE
 
     # these columns have dates in them and I want to drop them off for now to get some preliminary results
@@ -186,6 +230,22 @@ def main() -> None:
     # numeric_drop_list = ['revol_util', 'emp_length']
     # slim_data_df = d.
     # rop_columns(slim_data_df, numeric_drop_list)
+
+    #$ save_fn = r'/Users/dustin/CS/jobs/interview_problems/Zume/CreditClassification/data'
+    # plot_datatable(slim_data_df, slim_data_df, save_fn)
+    # test_print()
+    # print(type(data_df['desc'][0]))
+
+    # print(f"data sampe: {slim_data_df.iloc[0,:]}")
+
+    # creating a sample of the data to test in the server_Helper.py model
+    data_excerpt = slim_data_df.iloc[0,:].to_numpy().reshape(1,-1)
+
+    # pickle the data_excerpt object for testing in server_Helper.py
+    pickle_object(data_excerpt, 'data_sample.pickle')
+    print(f"data excerpt: {data_excerpt}, size: {data_excerpt.shape}")
+    print(int(lr_fit.predict(data_excerpt)[0]))
+
 
     """
 

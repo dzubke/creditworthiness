@@ -1,12 +1,16 @@
 # standard libraries
-from typing import List, Tuple
+from typing import List, Tuple, Any, Dict
 import re
+import pickle
 
-# non-standard libraries
+
+# 3rd party libraries
 import pandas as pd
 import numpy as np
 from numpy import array, argmax
+from sklearn.model_selection import train_test_split
 # from sklearn.preprocessing import LabelEncoder, OneHotEncoder
+
 
 
 def read_csv(data_path: str) -> any:
@@ -265,7 +269,7 @@ def nan_to_zero(in_df: pd.DataFrame, col_list: List[str]) -> pd.DataFrame:
     return in_df
 
 
-def dataset_split(data_array: np.ndarray, label_array: np.ndarray, split_ratios:List[float]
+def dataset_split(data_array: np.ndarray, label_array: np.ndarray, split_ratios: Dict[str, float]
             ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """This function splits the datasets into training, development, and test sets based on the float percentages given
         in split_ratios
@@ -278,9 +282,9 @@ def dataset_split(data_array: np.ndarray, label_array: np.ndarray, split_ratios:
     label_array: np.ndarray of shape (# of images x 1 )
         The label array of whether a image contains a ship (1) or not (0)
 
-    split_ratios: List of floats with length 3
-        Three float values that determine the percentages of how the training, development, and test sets are determined.
-        The first value sets the percentage of the dataset in the training set, second flot for the dev set, and so on.
+    split_ratios: dictionary of floats with the keys "train", "dev", and "test" identifying each float ratio
+        Dictionary of three float values that determine the percentages of how the training, development, and test sets are determined.
+        The first value sets the percentage of the dataset in the training set, second float for the dev set, and third for the test set.
     
     Returns
     --------
@@ -293,46 +297,60 @@ def dataset_split(data_array: np.ndarray, label_array: np.ndarray, split_ratios:
     X_test: np.ndarray of shape (# of images * split_ratios[2] x 19200 )
         The test dataset 
     
-     Y_train: np.ndarray of shape (# of images * split_ratios[0] x 1 )
+    y_train: np.ndarray of shape (# of images * split_ratios[0] x 1 )
         The training labels
     
-    Y_dev: np.ndarray of shape (# of images * split_ratios[1] x 1 )
+    y_dev: np.ndarray of shape (# of images * split_ratios[1] x 1 )
         The labels for the development set
     
-    Y_test: np.ndarray of shape (# of images * split_ratios[2] x 1 )
+    y_test: np.ndarray of shape (# of images * split_ratios[2] x 1 )
         The labels of the test set
 
     """
 
-    assert sum(x for x in split_ratios) <= 1 and sum(x for x in split_ratios) > 0.99, "The sum of the split ratios are too big or small"
+    assert sum(x for x in split_ratios.values()) <= 1 and sum(x for x in split_ratios.values()) > 0.99, "The sum of the split ratios are not approximately 1"
 
 
     # sklearn.train_test_split only splits the data into two groups. This will be called twice but to ensure the dataset
     # ratios are correct we need to perform the computation below to determine the split ratios of both calls of the splitting function
+    # As a example, say the dataset is a 0.8/0.1/0.1 split. The first call of train_test_split splits the data into 0.9 train_temp and 0.1 dev.
+    # The second call of train_test splits the 0.9 train_temp into a (0.8/0.9) split resulting in a 0.8 training set and a 0.1 test set
 
-    split_ratio_1 = 1.0 - split_ratios[1]
-    split_ratio_2 = split_ratios[0]/ split_ratio_1 
+    split_ratio_1 = 1.0 - split_ratios.get("dev")       
+    split_ratio_2 = split_ratios.get("train")/ split_ratio_1 
 
-    X_train, X_dev, Y_train, Y_dev = train_test_split(data_array, label_array, train_size = split_ratio_1, random_state = 1234, stratify = label_array, shuffle = True)
-    X_train, X_test, Y_train, Y_test = train_test_split(X_train, Y_train, train_size = split_ratio_2, random_state = 1234, stratify = Y_train, shuffle = True)
+    #splits the data into a temporary training set and the original dev set. 
+    X_train_temp, X_dev, y_train_temp, y_dev = train_test_split(data_array, label_array, train_size = split_ratio_1, random_state = 1234, stratify = label_array, shuffle = True)
+    
+    # takes the temporary training sets as input and splits it into the original train and test sets.
+    X_train, X_test, y_train, y_test = train_test_split(X_train_temp, y_train_temp, train_size = split_ratio_2, random_state = 1234, stratify = y_train_temp, shuffle = True)
 
-    return X_train, X_dev, X_test, Y_train, Y_dev, Y_test
+    return X_train, X_dev, X_test, y_train, y_dev, y_test
+
+
+def pickle_object(in_object: Any, out_path: str) -> None:
+    """this funciton will pickle the in_object out the filepath out_path
+
+    Parameters
+    ----------
+    in_object: Any data type
+        the object that will be pickled
+
+    out_path: str
+        the path where the pickle of the in_object will be saved
+
+    Returns
+    -------
+    None
+        Nothing is returned. the pickled object is saved at out_path
+    """
+
+    with open(out_path, 'wb') as data_fn:
+        pickle.dump(in_object, data_fn)
 
 
 def percent_convert(in_series: pd.Series) -> pd.Series:
     """Converts string percentages into floats as decimals versions of the percentages"""
-    pass
-
-
-
-
-
-def clean(df):
-    """
-    This functionn will perform various operations to clean the data such as dropping colummns with empty values
-    """
-
-    # pd.dropna     #drops empty cells
     pass
 
 

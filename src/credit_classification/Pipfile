@@ -10,6 +10,7 @@ sklearn = "*"
 plotly = "*"
 matplotlib = "*"
 requests = "*"
+xgboost = "*"
 
 [requires]
 python_version = "3.7"

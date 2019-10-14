@@ -1,5 +1,5 @@
 # standard libraries
-from typing import Callable, Tuple, List
+from typing import Callable, Tuple, List, Dict, Any
 import time
 
 # non-standard libraries
@@ -82,7 +82,7 @@ def sklearn_score(model_fit, Xtrain, ytrain):
 
     return model_fit.score(Xtrain, ytrain)
 
-def F1score(model_fit, Xinput: np.ndarray,  ylabel: np.ndarray, print_values: bool = True) -> Tuple[float, float, float]:
+def F1score(model_fit, Xinput: np.ndarray,  ylabel: np.ndarray, print_values: bool = False) -> Tuple[float, float, float]:
     """
     Parameters
     ----------
@@ -114,6 +114,38 @@ def F1score(model_fit, Xinput: np.ndarray,  ylabel: np.ndarray, print_values: bo
         print (f"Recall: {recall}")
 
     return F1_score, precision, recall
+
+def F1score_all(model_fits: Dict[str, Any], Xinput: np.ndarray,  ylabel: np.ndarray, print_values: bool = False) -> Dict[str, Tuple[float, float, float]]:
+    """this fuction runs the F1score function on all of the model_fit objects in the model_fit dictionary
+
+    Parameters
+    ---------
+    model_fits: Dict[str, Any]
+        a dictionary of fitted sklearn models
+    
+    Xinput: np.ndarray
+        the input data
+
+    ylabels:  np.ndarray
+        the true labels that the y_hat predictions will be compared to
+
+    print_values: bool = True
+        if True, the method will print the values of the confusion matrix. If false, it will not print the values. 
+
+    Returns
+    --------
+    F1score_dict = Dict[str, Tuple[float, float, float]]
+        a dictionary of whose keys are the model names in model_fits and the values are a Tuple of the output from F1score,
+            which are the F1score, precision, and recall of the models
+
+    """
+
+    F1score_dict = {}
+
+    for key, model_fit in model_fits.items():
+        F1score_dict.update({key: F1score(model_fit, Xinput, ylabel, print_values = print_values)})
+
+    return F1score_dict
 
 
 def plot_confusion_matrix(model_fit, Xinput: np.ndarray,  y_label: np.ndarray) -> None:
