@@ -1,7 +1,9 @@
 # model.py
+# standard libraries
 from typing import Callable, List, Any, Dict
 
-# non-standard libraries
+
+# 3rd partylibraries
 import pandas as pd
 import numpy as np
     # ML models
@@ -25,7 +27,6 @@ def model_object_dict() -> Dict[str, Any]:
     ----------
     model_dict: Dict[str, Any]
 
-
     """
 
     # models to test: logistic regression, naive bayes, multi-layer perceptron neural network, k-nearest neighbors, support vector machine classifier, 
@@ -47,8 +48,6 @@ def model_object_dict() -> Dict[str, Any]:
                     }
 
     return model_dict
-
-
 
 
 def model_fit(model, Xtrain: pd.DataFrame, ytrain: pd.DataFrame):
@@ -86,33 +85,4 @@ def model_fit_all(model_dict: Dict[str, Any], Xtrain: pd.DataFrame, ytrain: pd.D
         model_fit_dict.update({key: model_fit(model, Xtrain, ytrain)})
     
     return model_fit_dict
-
-
-
-
-def run_model(model: Callable, xtrain: np.ndarray, xtest: np.ndarray, ytrain: np.ndarray, ytest: np.ndarray):
-    """
-
-    Parameters
-    ----------
-
-
-    Returns
-    -------
-
-
-    """
-
-    model_fit = model.fit(xtrain, ytrain)
-
-    train_acc=model_fit.score(xtrain, ytrain)
-    test_acc=model_fit.score(xtest,ytest)
-    print("Training Data Accuracy: %0.2f" %(train_acc))
-    print("Test Data Accuracy:     %0.2f" %(test_acc))
-
-    # return LR_Fit
-
-    # lr1 = test_model(lr, xtrain, ytrain, xtest, ytest)
-
-
 

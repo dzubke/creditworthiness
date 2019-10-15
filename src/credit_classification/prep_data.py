@@ -9,7 +9,7 @@ import pandas as pd
 import numpy as np
 from numpy import array, argmax
 from sklearn.model_selection import train_test_split
-# from sklearn.preprocessing import LabelEncoder, OneHotEncoder
+from sklearn.preprocessing import OneHotEncoder
 
 
 
@@ -29,7 +29,7 @@ def read_csv(data_path: str) -> any:
 
     assert type(data_path) == str, "input path is not a string"
 
-    data = pd.read_csv(data_path, sep=",", header=0)
+    data = pd.read_csv(data_path, sep=",", header=0, index_col = 'id')
 
     return data
 
@@ -106,8 +106,8 @@ def remove_suffix(suffix: str, in_series: pd.Series) -> pd.Series :
 
     """
 
-    assert type(in_series) == pd.Series, "input object was not of pd.Series type"
-    assert type(in_series[0]) == str, "the elements of the pd.Series must be string type"
+    # assert type(in_series) == pd.Series, "input object was not of pd.Series type"
+    #assert type(in_series[0]) == str, "the elements of the pd.Series must be string type"
 
 
     out_series = in_series.map(lambda x: x.rstrip(suffix)) 
@@ -221,17 +221,15 @@ def object_columns(in_df: pd.DataFrame) -> List['str'] :
 
     Returns
     ----------
-    in_df: pd.DataFrame
-
+    col_list: List['str']
+        a list of the column names with type object
     """
 
     assert type(in_df) == pd.DataFrame, "input object was not of pd.DataFrane type"
 
-    # the columns
     col_list = []
-
     for label, content in in_df.iteritems():
-        if type(content[0]) == str:
+        if type(content.iloc[0]) == str:
             col_list.append(label)
 
     return col_list
@@ -353,42 +351,70 @@ def percent_convert(in_series: pd.Series) -> pd.Series:
     """Converts string percentages into floats as decimals versions of the percentages"""
     pass
 
-
-def one_hot_encoder(in_df: pd.DataFrame) -> pd.DataFrame:
-    """This is one hot function (ha) that converts a input dataframe and converts into a one-hot matrix.
+def one_hot_encoders(in_df: pd.DataFrame, col_list:List[str]) -> pd.DataFrame:
+    """This function calls the one_hot_encoder function on all of the column names in col_list
 
     Parameters
-    ----------
-
+    ---------- 
+    in_df: pd.DataFrame
+        the input dataframe to be manipulated
+    col_name: str
+        the name of the column to be converted into a one-hot representation
 
     Returns
     --------
-
-    Notes
-    -------
-    Code for the one-hot encoder taken from: https://machinelearningmastery.com/how-to-one-hot-encode-sequence-data-in-python/
-
-  
-    # one_hot = np.eye(D)[V.reshape(-1)].T
-
-        
-    # define example
-    data = ['cold', 'cold', 'warm', 'cold', 'hot', 'hot', 'warm', 'cold', 'warm', 'hot']
-    values = array(data)
-    print(values)
-    # integer encode
-    label_encoder = LabelEncoder()
-    integer_encoded = label_encoder.fit_transform(values)
-    print(integer_encoded)
-    # binary encode
-    onehot_encoder = OneHotEncoder(sparse=False)
-    integer_encoded = integer_encoded.reshape(len(integer_encoded), 1)
-    onehot_encoded = onehot_encoder.fit_transform(integer_encoded)
-    print(onehot_encoded)
-    # invert first example
-    inverted = label_encoder.inverse_transform([argmax(onehot_encoded[0, :])])
-    print(inverted)
+    in_df: pd.DataFrame
+        a modified version of the in_df
     """
+    # loop over all of the column names in col_list
+    for col_name in col_list:
+        in_df = one_hot_encoder(in_df, col_name)
+    
+    return in_df
+
+
+def one_hot_encoder(in_df: pd.DataFrame, col_name: str) -> pd.DataFrame:
+    """This function converts the column with col_name in dataframe in_df into a one-hot representation of the unique values
+        in col_name. It also deletes the col_name column from the in_df. The new one-hot columns will have names of the format:
+        'col_name' + '-' + 'value'
+    
+    Parameters
+    ---------- 
+    in_df: pd.DataFrame
+        the input dataframe to be manipulated
+    col_name: str
+        the name of the column to be converted into a one-hot representation
+
+    Returns
+    --------
+    in_df: pd.DataFrame
+        a modified version of the in_df
+    """
+    
+    # create a column vector to pass into the OneHotEncoder
+    col_values = in_df[col_name].to_numpy().reshape(-1,1)
+
+    # create the OneHotEncoder object
+    onehot_encoder = OneHotEncoder(sparse=False)
+    
+    # fit the object to the col_values
+    onehot_encoded = onehot_encoder.fit_transform(col_values)
+
+    # make a list of the encoder column names
+    encoder_columns = [col_name+'-'+category for category in onehot_encoder.categories_[0]]
+    
+    # convert to pd.DataFrame 
+    ohe_df = pd.DataFrame(data = onehot_encoded, index = in_df.index, columns=encoder_columns )
+
+    # join in_df and the one hot encoder dataframe ohe_df
+    in_df = in_df.join(ohe_df, lsuffix='_caller', rsuffix='_ohe_df')
+
+    # drop the original column
+    in_df = drop_columns(in_df, [col_name])
+
+    return in_df
+
+
 
 
 if __name__ == "__main__":
